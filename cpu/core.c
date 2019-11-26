@@ -9,6 +9,8 @@ int mos6502_init(mos6502_t *cpu)
     mos6502_register_tya(cpu);
     mos6502_register_sta(cpu);
     mos6502_register_and(cpu);
+    mos6502_register_tax(cpu);
+    mos6502_register_tay(cpu);
 
     cpu->rst = 1;
     cpu->rdy = 1;

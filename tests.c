@@ -48,11 +48,10 @@ void mos6502_test_wrapper(const char *name, int (*func)(mos6502_t *cpu))
 
 int main(int argc, char **argv)
 {
-    test_mos6502_core();
-    test_mos6502_lda();
-    test_mos6502_and();
-    test_mos6502_tay();
-   
+    //test_mos6502_core();
+    //test_mos6502_lda();
+    test_mos6502_ror();
+
 
     fprintf(stdout, "Tests succeded: %llu failed: %llu\n", tests_succeded, tests_failed);
     return 0;

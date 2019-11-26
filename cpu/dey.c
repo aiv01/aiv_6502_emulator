@@ -17,11 +17,10 @@ void mos6502_register_dey(mos6502_t *cpu)
 
 static int test_dey(mos6502_t *cpu)
 {
-    cpu -> y= 0x04;
+    cpu ->y= 0x04;
     mos6502_write8(cpu, 0x8000, 0x88);     
     int ticks = mos6502_tick(cpu);
-
-    return  cpu-> y == 0x03 && ticks == 2;
+    return  cpu->y == 0x03 && ticks == 2;
 }
 
 void test_mos6502_dey()

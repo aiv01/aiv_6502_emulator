@@ -5,6 +5,8 @@ int mos6502_init(mos6502_t *cpu)
     memset(cpu, 0, sizeof(mos6502_t));
 
     mos6502_register_lda(cpu);
+    mos6502_register_txa(cpu);
+    mos6502_register_tya(cpu);
     mos6502_register_sta(cpu);
     mos6502_register_and(cpu);
     mos6502_register_tax(cpu);

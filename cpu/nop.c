@@ -2,7 +2,6 @@
 
 static int nop(mos6502_t *cpu)
 {
-    cpu->pc++;
     return 1;
 }
 

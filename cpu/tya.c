@@ -3,7 +3,6 @@
 static int tya(mos6502_t *cpu)
 {
     cpu->a = cpu->y;
-    cpu->y = 0;
     return 2;
 }
 
@@ -19,7 +18,7 @@ static int test_tya(mos6502_t *cpu)
     cpu->y = 3;
     mos6502_write8(cpu, 0x8000, 0x98);
     int ticks = mos6502_tick(cpu);
-    return ticks == 2 && cpu->a == 3 && cpu->y == 0 && cpu->pc == 0x8001;
+    return ticks == 2 && cpu->a == 3 && cpu->pc == 0x8001;
 }
 
 void test_mos6502_tya()

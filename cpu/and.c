@@ -23,8 +23,8 @@ static int test_and_immediate(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0x29);
     mos6502_write8(cpu, 0x8001, 0x29);
     int ticks = mos6502_tick(cpu);
-    //return ticks == 2 && cpu->a == 0x21 && cpu->pc == 0x8002 && cpu->flags == 0;
-    return cpu->a == 1 && ticks == 2;
+    
+    return cpu->a == 1 && ticks == 2 && cpu->flags == 0;
 }
 
 void test_mos6502_and()

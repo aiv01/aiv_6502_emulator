@@ -1,33 +1,67 @@
 #include "mos6502.h"
 
+static int16_t get_page(mos6502_t *cpu)
+{
+    int16_t page = cpu->pc;
+    page = page >> 8;
+    page = page & 0xFF;
+
+    return page;
+}
+
+static int get_ticks_no_branch(mos6502_t *cpu)
+{
+    cpu->pc++;
+
+    return 2;
+}
+
+static int get_ticks_branch(mos6502_t *cpu)
+{
+    int16_t initial_page = get_page(cpu);
+
+    int8_t distance = cpu->read(cpu, cpu->pc);
+    cpu->pc += distance;
+
+    int16_t final_page = get_page(cpu);
+
+    int ticks = -1;
+
+    if (initial_page == final_page)
+        ticks = 3;
+    else
+        ticks = 4;
+
+    return ticks;
+}
+
+static int get_ticks_branch_flag_set(mos6502_t *cpu, int flag)
+{
+    int ticks = -1;
+
+    if (!flag)
+        ticks = get_ticks_no_branch(cpu);
+    else
+        ticks = get_ticks_branch(cpu);
+
+    return ticks;
+}
+
+static int get_ticks_branch_flag_clear(mos6502_t *cpu, int flag)
+{
+    int ticks = -1;
+
+    if (flag)
+        ticks = get_ticks_no_branch(cpu);
+    else
+        ticks = get_ticks_branch(cpu);
+
+    return ticks;
+}
+
 static int bpl(mos6502_t *cpu)
 {
-    int ticks = 0;
-    int flag = mos6502_get_flag(cpu, NEGATIVE);
-    if (!flag)
-    {
-        cpu->pc++;
-        ticks = 2;
-    }
-    else
-    {
-        int16_t initial_page = cpu->pc;
-        initial_page = initial_page >> 8;
-        initial_page = initial_page & 0xFF;
-
-        int8_t distance = cpu->read(cpu, cpu->pc);
-        cpu->pc += distance;
-
-        int16_t final_page = cpu->pc;
-        final_page = final_page >> 8;
-        final_page = final_page & 0xFF;
-
-        if (initial_page == final_page)
-            ticks = 3;
-        else            
-            ticks = 4;
-    }
-    return ticks;
+    return get_ticks_branch_flag_set(cpu, mos6502_get_flag(cpu, NEGATIVE));
 }
 void mos6502_register_bpl(mos6502_t *cpu)
 {
@@ -36,32 +70,7 @@ void mos6502_register_bpl(mos6502_t *cpu)
 
 static int bmi(mos6502_t *cpu)
 {
-    int ticks = 0;
-    int flag = mos6502_get_flag(cpu, NEGATIVE);
-    if (flag)
-    {
-        cpu->pc++;
-        ticks = 2;
-    }
-    else
-    {
-        int16_t initial_page = cpu->pc;
-        initial_page = initial_page >> 8;
-        initial_page = initial_page & 0xFF;
-
-        int8_t distance = cpu->read(cpu, cpu->pc);
-        cpu->pc += distance;
-
-        int16_t final_page = cpu->pc;
-        final_page = final_page >> 8;
-        final_page = final_page & 0xFF;
-
-        if (initial_page == final_page)
-            ticks = 3;
-        else            
-            ticks = 4;
-    }
-    return ticks;
+    return get_ticks_branch_flag_clear(cpu, mos6502_get_flag(cpu, NEGATIVE));
 }
 void mos6502_register_bmi(mos6502_t *cpu)
 {
@@ -70,32 +79,7 @@ void mos6502_register_bmi(mos6502_t *cpu)
 
 static int bvc(mos6502_t *cpu)
 {
-    int ticks = 0;
-    int flag = mos6502_get_flag(cpu, OVERFLOW);
-    if (flag)
-    {
-        cpu->pc++;
-        ticks = 2;
-    }
-    else
-    {
-        int16_t initial_page = cpu->pc;
-        initial_page = initial_page >> 8;
-        initial_page = initial_page & 0xFF;
-
-        int8_t distance = cpu->read(cpu, cpu->pc);
-        cpu->pc += distance;
-
-        int16_t final_page = cpu->pc;
-        final_page = final_page >> 8;
-        final_page = final_page & 0xFF;
-
-        if (initial_page == final_page)
-            ticks = 3;
-        else            
-            ticks = 4;
-    }
-    return ticks;
+    return get_ticks_branch_flag_clear(cpu, mos6502_get_flag(cpu, OVERFLOW));
 }
 void mos6502_register_bvc(mos6502_t *cpu)
 {
@@ -104,32 +88,7 @@ void mos6502_register_bvc(mos6502_t *cpu)
 
 static int bvs(mos6502_t *cpu)
 {
-    int ticks = 0;
-    int flag = mos6502_get_flag(cpu, OVERFLOW);
-    if (!flag)
-    {
-        cpu->pc++;
-        ticks = 2;
-    }
-    else
-    {
-        int16_t initial_page = cpu->pc;
-        initial_page = initial_page >> 8;
-        initial_page = initial_page & 0xFF;
-
-        int8_t distance = cpu->read(cpu, cpu->pc);
-        cpu->pc += distance;
-
-        int16_t final_page = cpu->pc;
-        final_page = final_page >> 8;
-        final_page = final_page & 0xFF;
-
-        if (initial_page == final_page)
-            ticks = 3;
-        else            
-            ticks = 4;
-    }
-    return ticks;
+    return get_ticks_branch_flag_set(cpu, mos6502_get_flag(cpu, OVERFLOW));
 }
 void mos6502_register_bvs(mos6502_t *cpu)
 {
@@ -138,32 +97,7 @@ void mos6502_register_bvs(mos6502_t *cpu)
 
 static int bcc(mos6502_t *cpu)
 {
-    int ticks = 0;
-    int flag = mos6502_get_flag(cpu, CARRY);
-    if (flag)
-    {
-        cpu->pc++;
-        ticks = 2;
-    }
-    else
-    {
-        int16_t initial_page = cpu->pc;
-        initial_page = initial_page >> 8;
-        initial_page = initial_page & 0xFF;
-
-        int8_t distance = cpu->read(cpu, cpu->pc);
-        cpu->pc += distance;
-
-        int16_t final_page = cpu->pc;
-        final_page = final_page >> 8;
-        final_page = final_page & 0xFF;
-
-        if (initial_page == final_page)
-            ticks = 3;
-        else            
-            ticks = 4;
-    }
-    return ticks;
+    return get_ticks_branch_flag_clear(cpu, mos6502_get_flag(cpu, CARRY));
 }
 void mos6502_register_bcc(mos6502_t *cpu)
 {
@@ -172,32 +106,7 @@ void mos6502_register_bcc(mos6502_t *cpu)
 
 static int bcs(mos6502_t *cpu)
 {
-    int ticks = 0;
-    int flag = mos6502_get_flag(cpu, CARRY);
-    if (!flag)
-    {
-        cpu->pc++;
-        ticks = 2;
-    }
-    else
-    {
-        int16_t initial_page = cpu->pc;
-        initial_page = initial_page >> 8;
-        initial_page = initial_page & 0xFF;
-
-        int8_t distance = cpu->read(cpu, cpu->pc);
-        cpu->pc += distance;
-
-        int16_t final_page = cpu->pc;
-        final_page = final_page >> 8;
-        final_page = final_page & 0xFF;
-
-        if (initial_page == final_page)
-            ticks = 3;
-        else            
-            ticks = 4;
-    }
-    return ticks;
+    return get_ticks_branch_flag_set(cpu, mos6502_get_flag(cpu, CARRY));
 }
 void mos6502_register_bcs(mos6502_t *cpu)
 {
@@ -206,32 +115,7 @@ void mos6502_register_bcs(mos6502_t *cpu)
 
 static int bne(mos6502_t *cpu)
 {
-    int ticks = 0;
-    int flag = mos6502_get_flag(cpu, ZERO);
-    if (flag)
-    {
-        cpu->pc++;
-        ticks = 2;
-    }
-    else
-    {
-        int16_t initial_page = cpu->pc;
-        initial_page = initial_page >> 8;
-        initial_page = initial_page & 0xFF;
-
-        int8_t distance = cpu->read(cpu, cpu->pc);
-        cpu->pc += distance;
-
-        int16_t final_page = cpu->pc;
-        final_page = final_page >> 8;
-        final_page = final_page & 0xFF;
-
-        if (initial_page == final_page)
-            ticks = 3;
-        else            
-            ticks = 4;
-    }
-    return ticks;
+    return get_ticks_branch_flag_clear(cpu, mos6502_get_flag(cpu, ZERO));
 }
 void mos6502_register_bne(mos6502_t *cpu)
 {
@@ -240,32 +124,7 @@ void mos6502_register_bne(mos6502_t *cpu)
 
 static int beq(mos6502_t *cpu)
 {
-    int ticks = 0;
-    int flag = mos6502_get_flag(cpu, ZERO);
-    if (!flag)
-    {
-        cpu->pc++;
-        ticks = 2;
-    }
-    else
-    {
-        int16_t initial_page = cpu->pc;
-        initial_page = initial_page >> 8;
-        initial_page = initial_page & 0xFF;
-
-        int8_t distance = cpu->read(cpu, cpu->pc);
-        cpu->pc += distance;
-
-        int16_t final_page = cpu->pc;
-        final_page = final_page >> 8;
-        final_page = final_page & 0xFF;
-
-        if (initial_page == final_page)
-            ticks = 3;
-        else            
-            ticks = 4;
-    }
-    return ticks;
+    return get_ticks_branch_flag_set(cpu, mos6502_get_flag(cpu, ZERO));
 }
 void mos6502_register_beq(mos6502_t *cpu)
 {

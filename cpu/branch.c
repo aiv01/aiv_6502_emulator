@@ -1,12 +1,12 @@
 #include "mos6502.h"
 
-static int16_t get_page(mos6502_t *cpu)
+static uint8_t get_page(mos6502_t *cpu)
 {
     int16_t page = cpu->pc;
     page = page >> 8;
     page = page & 0xFF;
 
-    return page;
+    return (uint8_t)page;
 }
 
 static int get_ticks_no_branch(mos6502_t *cpu)

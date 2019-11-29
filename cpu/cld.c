@@ -15,10 +15,11 @@ void mos6502_register_cld(mos6502_t *cpu)
 
 static int test_cld(mos6502_t *cpu)
 {
+    mos6502_set_flag(cpu, DECIMAL, 1);
     mos6502_write8(cpu, 0x8000, 0xD8);
     int ticks = mos6502_tick(cpu);
 
-    return ticks == 2 && mos6502_get_flag(cpu, DECIMAL) == 0;
+    return ticks == 2 && mos6502_get_flag(cpu, DECIMAL) == 0 && cpu->pc == 0x8001;
 }
 
 void test_mos6502_cld(mos6502_t *cpu)

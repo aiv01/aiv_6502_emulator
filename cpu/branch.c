@@ -18,9 +18,10 @@ static int get_ticks_no_branch(mos6502_t *cpu)
 
 static int get_ticks_branch(mos6502_t *cpu)
 {
+    int8_t distance = cpu->read(cpu, cpu->pc++);
+
     int16_t initial_page = get_page(cpu);
 
-    int8_t distance = cpu->read(cpu, cpu->pc);
     cpu->pc += distance;
 
     int16_t final_page = get_page(cpu);
@@ -146,7 +147,7 @@ static int test_bpl_branch(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0x10);
     mos6502_write8(cpu, 0x8001, 0x5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 3 && cpu->pc == 0x8006 && cpu->flags == NEGATIVE;
+    return ticks == 3 && cpu->pc == 0x8007 && cpu->flags == NEGATIVE;
 }
 
 static int test_bpl_page_boundary(mos6502_t *cpu)
@@ -155,7 +156,33 @@ static int test_bpl_page_boundary(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0x10);
     mos6502_write8(cpu, 0x8001, -5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 4 && cpu->pc == 0x7FFC && cpu->flags == NEGATIVE;
+    return ticks == 4 && cpu->pc == 0x7FFD && cpu->flags == NEGATIVE;
+}
+
+static int test_bpl_loop(mos6502_t *cpu)
+{
+    mos6502_set_flag(cpu, NEGATIVE, 0x1);
+    mos6502_write8(cpu, 0x8000, 0x10);
+    mos6502_write8(cpu, 0x8001, -2);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 12 && cpu->pc == 0x8000 && cpu->flags == NEGATIVE;
+}
+
+static int test_bpl_loop_page_boundary(mos6502_t *cpu)
+{
+    mos6502_set_flag(cpu, NEGATIVE, 0x1);
+    mos6502_write8(cpu, 0x8000, 0x10);
+    mos6502_write8(cpu, 0x8001, -5);
+    mos6502_write8(cpu, 0x7FFD, 0x10);
+    mos6502_write8(cpu, 0x7FFE, 1);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 16 && cpu->pc == 0x8000 && cpu->flags == NEGATIVE;
 }
 
 void test_mos6502_bpl()
@@ -163,6 +190,8 @@ void test_mos6502_bpl()
     RUN_TEST(test_bpl_no_branch);
     RUN_TEST(test_bpl_branch);
     RUN_TEST(test_bpl_page_boundary);
+    RUN_TEST(test_bpl_loop);
+    RUN_TEST(test_bpl_loop_page_boundary);
 }
 
 static int test_bmi_no_branch(mos6502_t *cpu)
@@ -179,7 +208,7 @@ static int test_bmi_branch(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0x30);
     mos6502_write8(cpu, 0x8001, 0x5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 3 && cpu->pc == 0x8006 && cpu->flags == 0;
+    return ticks == 3 && cpu->pc == 0x8007 && cpu->flags == 0;
 }
 
 static int test_bmi_page_boundary(mos6502_t *cpu)
@@ -187,7 +216,31 @@ static int test_bmi_page_boundary(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0x30);
     mos6502_write8(cpu, 0x8001, -5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 4 && cpu->pc == 0x7FFC && cpu->flags == 0;
+    return ticks == 4 && cpu->pc == 0x7FFD && cpu->flags == 0;
+}
+
+static int test_bmi_loop(mos6502_t *cpu)
+{
+    mos6502_write8(cpu, 0x8000, 0x30);
+    mos6502_write8(cpu, 0x8001, -2);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 12 && cpu->pc == 0x8000 && cpu->flags == 0;
+}
+
+static int test_bmi_loop_page_boundary(mos6502_t *cpu)
+{
+    mos6502_write8(cpu, 0x8000, 0x30);
+    mos6502_write8(cpu, 0x8001, -5);
+    mos6502_write8(cpu, 0x7FFD, 0x30);
+    mos6502_write8(cpu, 0x7FFE, 1);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 16 && cpu->pc == 0x8000 && cpu->flags == 0;
 }
 
 void test_mos6502_bmi()
@@ -195,6 +248,8 @@ void test_mos6502_bmi()
     RUN_TEST(test_bmi_no_branch);
     RUN_TEST(test_bmi_branch);
     RUN_TEST(test_bmi_page_boundary);
+    RUN_TEST(test_bmi_loop);
+    RUN_TEST(test_bmi_loop_page_boundary);
 }
 
 static int test_bvc_no_branch(mos6502_t *cpu)
@@ -211,7 +266,7 @@ static int test_bvc_branch(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0x50);
     mos6502_write8(cpu, 0x8001, 0x5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 3 && cpu->pc == 0x8006 && cpu->flags == 0;
+    return ticks == 3 && cpu->pc == 0x8007 && cpu->flags == 0;
 }
 
 static int test_bvc_page_boundary(mos6502_t *cpu)
@@ -219,7 +274,31 @@ static int test_bvc_page_boundary(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0x50);
     mos6502_write8(cpu, 0x8001, -5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 4 && cpu->pc == 0x7FFC && cpu->flags == 0;
+    return ticks == 4 && cpu->pc == 0x7FFD && cpu->flags == 0;
+}
+
+static int test_bvc_loop(mos6502_t *cpu)
+{
+    mos6502_write8(cpu, 0x8000, 0x50);
+    mos6502_write8(cpu, 0x8001, -2);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 12 && cpu->pc == 0x8000 && cpu->flags == 0;
+}
+
+static int test_bvc_loop_page_boundary(mos6502_t *cpu)
+{
+    mos6502_write8(cpu, 0x8000, 0x50);
+    mos6502_write8(cpu, 0x8001, -5);
+    mos6502_write8(cpu, 0x7FFD, 0x50);
+    mos6502_write8(cpu, 0x7FFE, 1);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 16 && cpu->pc == 0x8000 && cpu->flags == 0;
 }
 
 void test_mos6502_bvc()
@@ -227,6 +306,8 @@ void test_mos6502_bvc()
     RUN_TEST(test_bvc_no_branch);
     RUN_TEST(test_bvc_branch);
     RUN_TEST(test_bvc_page_boundary);
+    RUN_TEST(test_bvc_loop);
+    RUN_TEST(test_bvc_loop_page_boundary);
 }
 
 static int test_bvs_no_branch(mos6502_t *cpu)
@@ -243,7 +324,7 @@ static int test_bvs_branch(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0x70);
     mos6502_write8(cpu, 0x8001, 0x5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 3 && cpu->pc == 0x8006 && cpu->flags == OVERFLOW;
+    return ticks == 3 && cpu->pc == 0x8007 && cpu->flags == OVERFLOW;
 }
 
 static int test_bvs_page_boundary(mos6502_t *cpu)
@@ -252,7 +333,33 @@ static int test_bvs_page_boundary(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0x70);
     mos6502_write8(cpu, 0x8001, -5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 4 && cpu->pc == 0x7FFC && cpu->flags == OVERFLOW;
+    return ticks == 4 && cpu->pc == 0x7FFD && cpu->flags == OVERFLOW;
+}
+
+static int test_bvs_loop(mos6502_t *cpu)
+{
+    mos6502_set_flag(cpu, OVERFLOW, 0x1);
+    mos6502_write8(cpu, 0x8000, 0x70);
+    mos6502_write8(cpu, 0x8001, -2);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 12 && cpu->pc == 0x8000 && cpu->flags == OVERFLOW;
+}
+
+static int test_bvs_loop_page_boundary(mos6502_t *cpu)
+{
+    mos6502_set_flag(cpu, OVERFLOW, 0x1);
+    mos6502_write8(cpu, 0x8000, 0x70);
+    mos6502_write8(cpu, 0x8001, -5);
+    mos6502_write8(cpu, 0x7FFD, 0x70);
+    mos6502_write8(cpu, 0x7FFE, 1);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 16 && cpu->pc == 0x8000 && cpu->flags == OVERFLOW;
 }
 
 void test_mos6502_bvs()
@@ -260,6 +367,8 @@ void test_mos6502_bvs()
     RUN_TEST(test_bvs_no_branch);
     RUN_TEST(test_bvs_branch);
     RUN_TEST(test_bvs_page_boundary);
+    RUN_TEST(test_bvs_loop);
+    RUN_TEST(test_bvs_loop_page_boundary);
 }
 
 static int test_bcc_no_branch(mos6502_t *cpu)
@@ -276,7 +385,7 @@ static int test_bcc_branch(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0x90);
     mos6502_write8(cpu, 0x8001, 0x5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 3 && cpu->pc == 0x8006 && cpu->flags == 0;
+    return ticks == 3 && cpu->pc == 0x8007 && cpu->flags == 0;
 }
 
 static int test_bcc_page_boundary(mos6502_t *cpu)
@@ -284,7 +393,31 @@ static int test_bcc_page_boundary(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0x90);
     mos6502_write8(cpu, 0x8001, -5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 4 && cpu->pc == 0x7FFC && cpu->flags == 0;
+    return ticks == 4 && cpu->pc == 0x7FFD && cpu->flags == 0;
+}
+
+static int test_bcc_loop(mos6502_t *cpu)
+{
+    mos6502_write8(cpu, 0x8000, 0x90);
+    mos6502_write8(cpu, 0x8001, -2);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 12 && cpu->pc == 0x8000 && cpu->flags == 0;
+}
+
+static int test_bcc_loop_page_boundary(mos6502_t *cpu)
+{
+    mos6502_write8(cpu, 0x8000, 0x90);
+    mos6502_write8(cpu, 0x8001, -5);
+    mos6502_write8(cpu, 0x7FFD, 0x90);
+    mos6502_write8(cpu, 0x7FFE, 1);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 16 && cpu->pc == 0x8000 && cpu->flags == 0;
 }
 
 void test_mos6502_bcc()
@@ -292,6 +425,8 @@ void test_mos6502_bcc()
     RUN_TEST(test_bcc_no_branch);
     RUN_TEST(test_bcc_branch);
     RUN_TEST(test_bcc_page_boundary);
+    RUN_TEST(test_bcc_loop);
+    RUN_TEST(test_bcc_loop_page_boundary);
 }
 
 static int test_bcs_no_branch(mos6502_t *cpu)
@@ -308,7 +443,7 @@ static int test_bcs_branch(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0xB0);
     mos6502_write8(cpu, 0x8001, 0x5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 3 && cpu->pc == 0x8006 && cpu->flags == CARRY;
+    return ticks == 3 && cpu->pc == 0x8007 && cpu->flags == CARRY;
 }
 
 static int test_bcs_page_boundary(mos6502_t *cpu)
@@ -317,7 +452,33 @@ static int test_bcs_page_boundary(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0xB0);
     mos6502_write8(cpu, 0x8001, -5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 4 && cpu->pc == 0x7FFC && cpu->flags == CARRY;
+    return ticks == 4 && cpu->pc == 0x7FFD && cpu->flags == CARRY;
+}
+
+static int test_bcs_loop(mos6502_t *cpu)
+{
+    mos6502_set_flag(cpu, CARRY, 0x1);
+    mos6502_write8(cpu, 0x8000, 0xB0);
+    mos6502_write8(cpu, 0x8001, -2);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 12 && cpu->pc == 0x8000 && cpu->flags == CARRY;
+}
+
+static int test_bcs_loop_page_boundary(mos6502_t *cpu)
+{
+    mos6502_set_flag(cpu, CARRY, 0x1);
+    mos6502_write8(cpu, 0x8000, 0xB0);
+    mos6502_write8(cpu, 0x8001, -5);
+    mos6502_write8(cpu, 0x7FFD, 0xB0);
+    mos6502_write8(cpu, 0x7FFE, 1);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 16 && cpu->pc == 0x8000 && cpu->flags == CARRY;
 }
 
 void test_mos6502_bcs()
@@ -325,6 +486,8 @@ void test_mos6502_bcs()
     RUN_TEST(test_bcs_no_branch);
     RUN_TEST(test_bcs_branch);
     RUN_TEST(test_bcs_page_boundary);
+    RUN_TEST(test_bcs_loop);
+    RUN_TEST(test_bcs_loop_page_boundary);
 }
 
 static int test_bne_no_branch(mos6502_t *cpu)
@@ -341,7 +504,7 @@ static int test_bne_branch(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0xD0);
     mos6502_write8(cpu, 0x8001, 0x5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 3 && cpu->pc == 0x8006 && cpu->flags == 0;
+    return ticks == 3 && cpu->pc == 0x8007 && cpu->flags == 0;
 }
 
 static int test_bne_page_boundary(mos6502_t *cpu)
@@ -349,7 +512,31 @@ static int test_bne_page_boundary(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0xD0);
     mos6502_write8(cpu, 0x8001, -5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 4 && cpu->pc == 0x7FFC && cpu->flags == 0;
+    return ticks == 4 && cpu->pc == 0x7FFD && cpu->flags == 0;
+}
+
+static int test_bne_loop(mos6502_t *cpu)
+{
+    mos6502_write8(cpu, 0x8000, 0xD0);
+    mos6502_write8(cpu, 0x8001, -2);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 12 && cpu->pc == 0x8000 && cpu->flags == 0;
+}
+
+static int test_bne_loop_page_boundary(mos6502_t *cpu)
+{
+    mos6502_write8(cpu, 0x8000, 0xD0);
+    mos6502_write8(cpu, 0x8001, -5);
+    mos6502_write8(cpu, 0x7FFD, 0xD0);
+    mos6502_write8(cpu, 0x7FFE, 1);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 16 && cpu->pc == 0x8000 && cpu->flags == 0;
 }
 
 void test_mos6502_bne()
@@ -357,6 +544,8 @@ void test_mos6502_bne()
     RUN_TEST(test_bne_no_branch);
     RUN_TEST(test_bne_branch);
     RUN_TEST(test_bne_page_boundary);
+    RUN_TEST(test_bne_loop);
+    RUN_TEST(test_bne_loop_page_boundary);
 }
 
 static int test_beq_no_branch(mos6502_t *cpu)
@@ -373,7 +562,7 @@ static int test_beq_branch(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0xF0);
     mos6502_write8(cpu, 0x8001, 0x5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 3 && cpu->pc == 0x8006 && cpu->flags == ZERO;
+    return ticks == 3 && cpu->pc == 0x8007 && cpu->flags == ZERO;
 }
 
 static int test_beq_page_boundary(mos6502_t *cpu)
@@ -382,7 +571,33 @@ static int test_beq_page_boundary(mos6502_t *cpu)
     mos6502_write8(cpu, 0x8000, 0xF0);
     mos6502_write8(cpu, 0x8001, -5);
     int ticks = mos6502_tick(cpu);
-    return ticks == 4 && cpu->pc == 0x7FFC && cpu->flags == ZERO;
+    return ticks == 4 && cpu->pc == 0x7FFD && cpu->flags == ZERO;
+}
+
+static int test_beq_loop(mos6502_t *cpu)
+{
+    mos6502_set_flag(cpu, ZERO, 0x1);
+    mos6502_write8(cpu, 0x8000, 0xF0);
+    mos6502_write8(cpu, 0x8001, -2);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 12 && cpu->pc == 0x8000 && cpu->flags == ZERO;
+}
+
+static int test_beq_loop_page_boundary(mos6502_t *cpu)
+{
+    mos6502_set_flag(cpu, ZERO, 0x1);
+    mos6502_write8(cpu, 0x8000, 0xF0);
+    mos6502_write8(cpu, 0x8001, -5);
+    mos6502_write8(cpu, 0x7FFD, 0xF0);
+    mos6502_write8(cpu, 0x7FFE, 1);
+    int ticks = mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    ticks += mos6502_tick(cpu);
+    return ticks == 16 && cpu->pc == 0x8000 && cpu->flags == ZERO;
 }
 
 void test_mos6502_beq()
@@ -390,5 +605,7 @@ void test_mos6502_beq()
     RUN_TEST(test_beq_no_branch);
     RUN_TEST(test_beq_branch);
     RUN_TEST(test_beq_page_boundary);
+    RUN_TEST(test_beq_loop);
+    RUN_TEST(test_beq_loop_page_boundary);
 }
 #endif

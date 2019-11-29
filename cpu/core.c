@@ -10,13 +10,13 @@ int mos6502_init(mos6502_t *cpu)
     mos6502_register_sta(cpu);
     mos6502_register_and(cpu);
     mos6502_register_nop(cpu);
-<<<<<<< HEAD
     mos6502_register_clc(cpu);
     mos6502_register_cld(cpu);
-=======
     mos6502_register_tax(cpu);
     mos6502_register_tay(cpu);
->>>>>>> db032f7a011207e33071865ba75811eb5ffe2818
+    mos6502_register_lsr(cpu);
+    mos6502_register_sec(cpu);
+    mos6502_register_sed(cpu);
 
     cpu->rst = 1;
     cpu->rdy = 1;

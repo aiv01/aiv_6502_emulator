@@ -1,5 +1,19 @@
 #include "mos6502.h"
 
+static int sta_zeropage(mos6502_t *cpu)
+{
+    uint8_t zp_address = mos6502_read8(cpu, cpu->pc++);
+    mos6502_write8(cpu, (uint16_t)zp_address, cpu->a);
+    return 3;
+}
+
+static int sta_zeropage_x(mos6502_t *cpu)
+{
+    uint8_t zp_address = (mos6502_read8(cpu, cpu->pc++))  + cpu->x;
+    mos6502_write8(cpu, (uint16_t)zp_address, cpu->a);
+    return 4;
+}
+
 static int sta_absolute(mos6502_t *cpu)
 {
     uint16_t address = mos6502_read16(cpu, cpu->pc);
@@ -26,12 +40,49 @@ static int sta_absolute_y(mos6502_t *cpu)
 
 void mos6502_register_sta(mos6502_t *cpu)
 {
+    mos6502_register_opcode(cpu, 0x85, sta_zeropage);
+    mos6502_register_opcode(cpu, 0x95, sta_zeropage_x);
     mos6502_register_opcode(cpu, 0x8D, sta_absolute);
     mos6502_register_opcode(cpu, 0x9D, sta_absolute_x);
     mos6502_register_opcode(cpu, 0x99, sta_absolute_y);
 }
 
 #ifdef _TEST
+
+static int test_sta_zeropage(mos6502_t *cpu)
+{
+    cpu->a=0x49;
+    mos6502_write8(cpu, 0x8000, 0x85);
+    mos6502_write8(cpu, 0x8001, 0x44);
+    mos6502_write8(cpu, 0x0044, 0xA);
+    int ticks = mos6502_tick(cpu);
+    int new_value = mos6502_read8(cpu,0x44);
+    return ticks == 3 && cpu->a == 0x49 && cpu->pc == 0x8002 && cpu->flags == 0 && new_value == 0x49;
+}
+
+static int test_sta_zeropage_x(mos6502_t *cpu)
+{
+    cpu->a = 0x49;
+    cpu->x = 0x10;    
+    mos6502_write8(cpu, 0x8000, 0x95);
+    mos6502_write8(cpu, 0x8001, 0x40);
+    mos6502_write8(cpu, 0x0050, 0xA);
+    int ticks = mos6502_tick(cpu);
+    int new_value = mos6502_read8(cpu,0x50);
+    return ticks == 4 && cpu->a == 0x49 && cpu->pc == 0x8002 && cpu->flags == 0 && new_value == 0x49;
+}
+
+static int test_sta_zeropage_x_overflow(mos6502_t *cpu)
+{
+    cpu->a = 0x49;
+    cpu->x = 0xFF;   
+    mos6502_write8(cpu, 0x8000, 0x95);
+    mos6502_write8(cpu, 0x8001, 0x50);
+    mos6502_write8(cpu, 0x004F, 0xA);
+    int ticks = mos6502_tick(cpu);
+    int new_value = mos6502_read8(cpu,0x4F);
+    return ticks == 4 && cpu->a == 0x49 && cpu->pc == 0x8002 && cpu->flags == 0 && new_value == 0x49;
+}
 
 static int test_sta_absolute(mos6502_t *cpu)
 {
@@ -94,6 +145,9 @@ static int test_sta_absolute_y_overflow(mos6502_t *cpu)
 
 void test_mos6502_sta()
 {
+    RUN_TEST(test_sta_zeropage);
+    RUN_TEST(test_sta_zeropage_x);
+    RUN_TEST(test_sta_zeropage_x_overflow);
     RUN_TEST(test_sta_absolute);
     RUN_TEST(test_sta_absolute_x);
     RUN_TEST(test_sta_absolute_x_overflow);

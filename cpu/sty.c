@@ -31,7 +31,7 @@ static int sty_absolute(mos6502_t *cpu)
 void mos6502_register_sty(mos6502_t *cpu)
 {
     mos6502_register_opcode(cpu, 0x84, sty_zero_page);
-	 mos6502_register_opcode(cpu, 0x94, sty_zeropage_x);
+    mos6502_register_opcode(cpu, 0x94, sty_zeropage_x);
     mos6502_register_opcode(cpu, 0x8C, sty_absolute);
 }
 
@@ -75,7 +75,7 @@ void test_mos6502_sty()
 {
     RUN_TEST(test_sty_absolute);
     RUN_TEST(test_sty_zero_page);
-	RUN_TEST(test_sty_zeropage_x);
+    RUN_TEST(test_sty_zeropage_x);
 
 }
 

@@ -48,6 +48,9 @@ int main(int argc, char **argv)
 {
     test_mos6502_core();
     test_mos6502_lda();
+
+    test_mos6502_stx();
+
     test_mos6502_ldx();
     test_mos6502_and();
     test_mos6502_nop();
@@ -57,6 +60,7 @@ int main(int argc, char **argv)
     test_mos6502_lsr();
     test_mos6502_sec();
     test_mos6502_sed();
+
 
     fprintf(stdout, "Tests succeded: %llu failed: %llu\n", tests_succeded, tests_failed);
     return 0;

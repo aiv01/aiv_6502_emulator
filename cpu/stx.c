@@ -31,7 +31,7 @@ static int stx_absolute(mos6502_t *cpu)
 void mos6502_register_stx(mos6502_t *cpu)
 {
     mos6502_register_opcode(cpu, 0x86, stx_zero_page);
-    mos6502_register_opcode(cpu, 0x86, stx_zeropage_y);
+    mos6502_register_opcode(cpu, 0x96, stx_zeropage_y);
     mos6502_register_opcode(cpu, 0x8E, stx_absolute);
 }
 
@@ -40,11 +40,11 @@ void mos6502_register_stx(mos6502_t *cpu)
 static int test_stx_zeropage(mos6502_t *cpu)
 {
     cpu->x=0x49;
-    mos6502_write8(cpu, 0x8000, 0x8E);
+    mos6502_write8(cpu, 0x8000, 0x86);
     mos6502_write8(cpu, 0x8001, 0x44);
     mos6502_write8(cpu, 0x0044, 0xA);
     int ticks = mos6502_tick(cpu);
-    int new_value = mos6502_read8(cpu,0x44);
+    uint8_t new_value = mos6502_read8(cpu,0x44);
     return ticks == 3 && cpu->x == 0x49 && cpu->pc == 0x8002 && cpu->flags == 0 && new_value == 0x49;
 }
 
@@ -52,7 +52,7 @@ static int test_stx_zeropage_y(mos6502_t *cpu)
 {
     cpu->x = 0x49;
     cpu->y = 0x10;    
-    mos6502_write8(cpu, 0x8000, 0x8E);
+    mos6502_write8(cpu, 0x8000, 0x96);
     mos6502_write8(cpu, 0x8001, 0x40);
     int ticks = mos6502_tick(cpu);
     uint8_t new_value = mos6502_read8(cpu,0x0050);

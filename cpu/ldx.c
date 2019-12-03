@@ -19,30 +19,24 @@ static int ldx_zero_page(mos6502_t *cpu)
 }
 
 static int ldx_zero_page_y(mos6502_t *cpu)
-{
-    
+{    
     uint8_t zp_address = cpu->read(cpu, cpu->pc++);
-    cpu->x = mos6502_read8(cpu, (uint16_t)zp_address + cpu->y);
+    uint16_t new_address = zp_address + cpu->y;
+    cpu->x = mos6502_read8(cpu, new_address);
     mos6502_set_flag(cpu, NEGATIVE, cpu->x & NEGATIVE);
     mos6502_set_flag(cpu, ZERO, cpu->x == 0);
-    return 4;
+    uint8_t boundary_page = (new_address >> 8);    
+    return 4 + boundary_page;
 }
 
 static int ldx_absolute(mos6502_t *cpu)
 {
-    //printf("\nabsolute debug:");
-    ////printf("\nprogram counter: %x", cpu->pc);
     uint8_t low = cpu->read(cpu, cpu->pc++);
     uint8_t high = cpu->read(cpu, cpu->pc++);
-    uint16_t address = (high << 8) | low;    
-    //printf("\nindirizzo:  %x", address);
+    uint16_t address = (high << 8) | low;   
     cpu->x = mos6502_read8(cpu, address);
-    //printf("\nregistro x: %x", cpu->x);
     mos6502_set_flag(cpu, NEGATIVE, cpu->x & NEGATIVE);
-    mos6502_set_flag(cpu, ZERO, cpu->x == 0);    
-    //printf("\nflags: %d", cpu->flags);
-    //printf("\nprogram counter: %x", cpu->pc);
-    //printf("\n\n");
+    mos6502_set_flag(cpu, ZERO, cpu->x == 0);  
     return 4;
 }
 
@@ -56,18 +50,7 @@ static int ldx_absolute_y(mos6502_t *cpu)
     mos6502_set_flag(cpu, NEGATIVE, cpu->x & NEGATIVE);
     mos6502_set_flag(cpu, ZERO, cpu->x == 0);
     uint8_t boundary_page = (new_address >> 8) - high;
-    return 4 + (boundary_page);
-    
-    // EVERY LINE NEEDS TO BE PLACED IN ORDER
-    //printf("\n absolute y debug:");
-    //printf("\n program counter start: %x", cpu->pc);
-    //printf("\n address start:  %x", address);
-    //printf("\n new address:  %x", new_address);
-    //printf("\n register x: %x", cpu->x);
-    //printf("\n flags: %d", cpu->flags);
-    //printf("\n bounary page: %s", boundary_page ? "yes" : "no");      
-    //printf("\n program counter end: %x", cpu->pc);
-    //printf("\n\n");
+    return 4 + boundary_page;
 }
 
 
@@ -81,8 +64,6 @@ void mos6502_register_ldx(mos6502_t *cpu)
 }
 
 #ifdef _TEST
-
-// Immediate
 
 static int test_ldx_immediate(mos6502_t *cpu)
 {
@@ -107,8 +88,6 @@ static int test_ldx_immediate_zero(mos6502_t *cpu)
     int ticks = mos6502_tick(cpu);
     return ticks == 2 && cpu->x == 0x00 && cpu->pc == 0x8002 && cpu->flags == ZERO;
 }
-
-// Zero Page
 
 static int test_ldx_zero_page(mos6502_t *cpu)
 {
@@ -175,7 +154,25 @@ static int test_ldx_zero_page_y_negative(mos6502_t *cpu)
     return ticks == 4 && cpu->x == 0x80 && cpu->pc == 0x8002 && cpu->flags == NEGATIVE;
 }
 
-// Absolute
+static int test_ldx_zero_page_y_page_boundary(mos6502_t *cpu)
+{
+    cpu->y = 2;
+    mos6502_write8(cpu, 0x0101, 0x44);
+    mos6502_write8(cpu, 0x8000, 0xB6);
+    mos6502_write8(cpu, 0x8001, 0xFF);
+    int ticks = mos6502_tick(cpu);
+    return ticks == 5 && cpu->x == 0x44 && cpu->pc == 0x8002 && cpu->flags == 0;
+}
+
+static int test_ldx_zero_page_y_page_boundary_negative(mos6502_t *cpu)
+{
+    cpu->y = 2;
+    mos6502_write8(cpu, 0x0101, 0xF0);
+    mos6502_write8(cpu, 0x8000, 0xB6);
+    mos6502_write8(cpu, 0x8001, 0xFF);
+    int ticks = mos6502_tick(cpu);
+    return ticks == 5 && cpu->x == 0xF0 && cpu->pc == 0x8002 && cpu->flags == NEGATIVE;
+}
 
 static int test_ldx_absolute(mos6502_t *cpu)
 {
@@ -242,7 +239,7 @@ static int test_ldx_absolute_y_negative(mos6502_t *cpu)
     return ticks == 4 && cpu->x == 0x87 && cpu->pc == 0x8003 && cpu->flags == NEGATIVE;
 }
 
-static int test_ldx_absolute_y_pb(mos6502_t *cpu)
+static int test_ldx_absolute_y_page_boundary(mos6502_t *cpu)
 {
     cpu->y = 2;
     mos6502_write8(cpu, 0x0601, 0x6E);
@@ -266,6 +263,8 @@ void test_mos6502_ldx()
     RUN_TEST(test_ldx_zero_page_y);
     RUN_TEST(test_ldx_zero_page_y_same_code);
     RUN_TEST(test_ldx_zero_page_y_negative);
+    RUN_TEST(test_ldx_zero_page_y_page_boundary);
+    RUN_TEST(test_ldx_zero_page_y_page_boundary_negative);
     RUN_TEST(test_ldx_absolute);
     RUN_TEST(test_ldx_absolute_same_code);
     RUN_TEST(test_ldx_absolute_negative);
@@ -273,6 +272,6 @@ void test_mos6502_ldx()
     RUN_TEST(test_ldx_absolute_y);
     RUN_TEST(test_ldx_absolute_y_same_code);
     RUN_TEST(test_ldx_absolute_y_negative);
-    RUN_TEST(test_ldx_absolute_y_pb);
+    RUN_TEST(test_ldx_absolute_y_page_boundary);
 }
 #endif

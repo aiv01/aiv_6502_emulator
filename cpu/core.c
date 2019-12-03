@@ -5,7 +5,28 @@ int mos6502_init(mos6502_t *cpu)
     memset(cpu, 0, sizeof(mos6502_t));
 
     mos6502_register_lda(cpu);
+
     mos6502_register_stx(cpu);
+
+    mos6502_register_ldx(cpu);
+    mos6502_register_txa(cpu);
+    mos6502_register_tya(cpu);
+    mos6502_register_sta(cpu);
+    mos6502_register_and(cpu);
+    mos6502_register_nop(cpu);
+    mos6502_register_clc(cpu);
+    mos6502_register_cld(cpu);
+    mos6502_register_tax(cpu);
+    mos6502_register_tay(cpu);
+
+    mos6502_register_lsr(cpu);
+    mos6502_register_sec(cpu);
+    mos6502_register_sed(cpu);
+
+	mos6502_register_clv(cpu);
+    mos6502_register_sty(cpu);
+
+
 
     cpu->rst = 1;
     cpu->rdy = 1;

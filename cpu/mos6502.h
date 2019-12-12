@@ -116,26 +116,26 @@ void test_mos6502_bcc(); // marcolino
 void test_mos6502_bcs(); // marcolino
 void test_mos6502_beq(); // marcolino
 void test_mos6502_bit();
-void test_mos6502_bmi();
-void test_mos6502_bne();
-void test_mos6502_bpl();
+void test_mos6502_bmi(); // marcolino
+void test_mos6502_bne(); // marcolino
+void test_mos6502_bpl(); // marcolino
 void test_mos6502_brk();
-void test_mos6502_bvc();
-void test_mos6502_bvs();
-void test_mos6502_clc();
-void test_mos6502_cld();
+void test_mos6502_bvc(); // marcolino
+void test_mos6502_bvs(); // marcolino
+void test_mos6502_clc(); // velardi
+void test_mos6502_cld(); // velardi
 void test_mos6502_cli();
-void test_mos6502_clv();
-void test_mos6502_cmp();
-void test_mos6502_cpx();
-void test_mos6502_cpy();
-void test_mos6502_dec();
-void test_mos6502_dex();
-void test_mos6502_dey();
-void test_mos6502_eor();
-void test_mos6502_inc();
-void test_mos6502_inx();
-void test_mos6502_iny();
+void test_mos6502_clv(); // giammarco
+void test_mos6502_cmp(); // allegri
+void test_mos6502_cpx(); // carlostella
+void test_mos6502_cpy(); // manigiavacchi
+void test_mos6502_dec(); // acquaviva
+void test_mos6502_dex(); // burioni
+void test_mos6502_dey(); // burioni
+void test_mos6502_eor(); // sebastiano
+void test_mos6502_inc(); // acquaviva
+void test_mos6502_inx(); // riccardo
+void test_mos6502_iny(); // riccardo
 void test_mos6502_jmp();
 void test_mos6502_jsr();
 void test_mos6502_lda();
@@ -148,8 +148,8 @@ void test_mos6502_pha();
 void test_mos6502_php();
 void test_mos6502_pla();
 void test_mos6502_plp();
-void test_mos6502_rol();
-void test_mos6502_ror();
+void test_mos6502_rol(); // antonino
+void test_mos6502_ror(); // lamanuzzi
 void test_mos6502_rti();
 void test_mos6502_rts();
 void test_mos6502_sbc();
@@ -162,7 +162,7 @@ void test_mos6502_sty(); // mirko
 void test_mos6502_tax(); // mirko
 void test_mos6502_tay(); // mirko
 void test_mos6502_tsx();
-void test_mos6502_txa();
+void test_mos6502_txa(); // simone
 void test_mos6502_txs();
-void test_mos6502_tya();
+void test_mos6502_tya(); // simone
 #endif

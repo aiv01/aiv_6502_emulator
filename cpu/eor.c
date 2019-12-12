@@ -2,7 +2,7 @@
 
 static int eor_immediate(mos6502_t *cpu)
 {
-    uint8_t immediate = cpu->read(cpu, cpu->pc++);
+    uint8_t immediate = mos6502_read8(cpu, cpu->pc++);
     cpu->a ^= immediate;
     mos6502_set_flag(cpu, NEGATIVE, cpu->a & NEGATIVE);
     mos6502_set_flag(cpu, ZERO, cpu->a == 0);
@@ -11,7 +11,7 @@ static int eor_immediate(mos6502_t *cpu)
 
 static int eor_zero_page(mos6502_t *cpu)
 {
-    uint8_t zp_address = cpu->read(cpu, cpu->pc++);
+    uint8_t zp_address = mos6502_read8(cpu, cpu->pc++);
     cpu->a ^= mos6502_read8(cpu, (uint16_t)zp_address);
     mos6502_set_flag(cpu, NEGATIVE, cpu->a & NEGATIVE);
     mos6502_set_flag(cpu, ZERO, cpu->a == 0);
@@ -20,7 +20,7 @@ static int eor_zero_page(mos6502_t *cpu)
 
 static int eor_zero_page_x(mos6502_t *cpu)
 {
-    uint8_t zp_address = cpu->read(cpu, cpu->pc++);
+    uint8_t zp_address = mos6502_read8(cpu, cpu->pc++);
     uint8_t x_val = cpu->x;
     cpu->a ^= mos6502_read8(cpu, (uint16_t)(zp_address + x_val));
     mos6502_set_flag(cpu, NEGATIVE, cpu->a & NEGATIVE);
@@ -30,8 +30,8 @@ static int eor_zero_page_x(mos6502_t *cpu)
 
 static int eor_absolute(mos6502_t *cpu)
 {
-    uint8_t abs_low_address = cpu->read(cpu, cpu->pc++);
-    uint8_t abs_high_address = cpu->read(cpu, cpu->pc++);
+    uint8_t abs_low_address = mos6502_read8(cpu, cpu->pc++);
+    uint8_t abs_high_address = mos6502_read8(cpu, cpu->pc++);
     
     uint16_t abs_address = (((uint16_t)abs_high_address) << 8) | (uint16_t)abs_low_address;
     
@@ -43,8 +43,8 @@ static int eor_absolute(mos6502_t *cpu)
 
 static int eor_absolute_x(mos6502_t *cpu)
 {
-    uint8_t low_address = cpu->read(cpu, cpu->pc++);
-    uint16_t high_address = (uint16_t)(cpu->read(cpu, cpu->pc++)) << 8;
+    uint8_t low_address = mos6502_read8(cpu, cpu->pc++);
+    uint16_t high_address = (uint16_t)mos6502_read8(cpu, cpu->pc++) << 8;
     
     uint8_t x_val = cpu->x;
     uint16_t abs_address = high_address | (uint16_t)(low_address);
@@ -65,8 +65,8 @@ static int eor_absolute_x(mos6502_t *cpu)
 
 static int eor_absolute_y(mos6502_t *cpu)
 {
-    uint8_t low_address = cpu->read(cpu, cpu->pc++);
-    uint16_t high_address = (uint16_t)(cpu->read(cpu, cpu->pc++)) << 8;
+    uint8_t low_address = mos6502_read8(cpu, cpu->pc++);
+    uint16_t high_address = (uint16_t)mos6502_read8(cpu, cpu->pc++) << 8;
     
     uint8_t y_val = cpu->y;
     uint16_t abs_address = ((uint16_t)high_address) | (uint16_t)(low_address);
@@ -87,7 +87,7 @@ static int eor_absolute_y(mos6502_t *cpu)
 
 static int eor_indirect_x(mos6502_t *cpu)
 {
-    uint8_t indirect_address = cpu->read(cpu, cpu->pc++);
+    uint8_t indirect_address = mos6502_read8(cpu, cpu->pc++);
     
     uint8_t x_val = cpu->x;
     indirect_address += x_val;
@@ -102,7 +102,7 @@ static int eor_indirect_x(mos6502_t *cpu)
 
 static int eor_indirect_y(mos6502_t *cpu)
 {
-    uint8_t indirect_address = cpu->read(cpu, cpu->pc++);
+    uint8_t indirect_address = mos6502_read8(cpu, cpu->pc++);
     
     uint16_t data_address = mos6502_read16(cpu, (uint16_t)indirect_address);
     uint16_t high_address = data_address & 255 << 8;

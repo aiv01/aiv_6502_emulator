@@ -109,13 +109,12 @@ void mos6502_test_wrapper(const char *name, int (*func)(mos6502_t *cpu));
 #define RUN_TEST(func) mos6502_test_wrapper(#func, func);
 
 void test_mos6502_core();
-void test_mos6502_lda();
-void test_mos6502_adc();
-void test_mos6502_and();
-void test_mos6502_asl();
-void test_mos6502_bcc();
-void test_mos6502_bcs();
-void test_mos6502_beq();
+void test_mos6502_adc(); 
+void test_mos6502_and(); // tommaso
+void test_mos6502_asl(); // nicola
+void test_mos6502_bcc(); // marcolino
+void test_mos6502_bcs(); // marcolino
+void test_mos6502_beq(); // marcolino
 void test_mos6502_bit();
 void test_mos6502_bmi();
 void test_mos6502_bne();
@@ -140,11 +139,11 @@ void test_mos6502_iny();
 void test_mos6502_jmp();
 void test_mos6502_jsr();
 void test_mos6502_lda();
-void test_mos6502_ldx();
-void test_mos6502_ldy();
-void test_mos6502_lsr();
-void test_mos6502_nop();
-void test_mos6502_ora();
+void test_mos6502_ldx(); // ronconi
+void test_mos6502_ldy(); // necci
+void test_mos6502_lsr(); // velardi
+void test_mos6502_nop(); // velardi
+void test_mos6502_ora(); // fagiolo
 void test_mos6502_pha();
 void test_mos6502_php();
 void test_mos6502_pla();
@@ -154,14 +153,14 @@ void test_mos6502_ror();
 void test_mos6502_rti();
 void test_mos6502_rts();
 void test_mos6502_sbc();
-void test_mos6502_sec();
-void test_mos6502_sed();
+void test_mos6502_sec(); // velardi
+void test_mos6502_sed(); //velardi
 void test_mos6502_sei();
-void test_mos6502_sta();
-void test_mos6502_stx();
-void test_mos6502_sty();
-void test_mos6502_tax();
-void test_mos6502_tay();
+void test_mos6502_sta(); // lorenzo
+void test_mos6502_stx(); // damiano
+void test_mos6502_sty(); // mirko
+void test_mos6502_tax(); // mirko
+void test_mos6502_tay(); // mirko
 void test_mos6502_tsx();
 void test_mos6502_txa();
 void test_mos6502_txs();
